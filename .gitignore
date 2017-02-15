@@ -39,3 +39,9 @@ jspm_packages
 src/index.marko.js
 
 test/src/server.js
+
+# Webstorm
+.idea/
+
+# Joe
+*~
