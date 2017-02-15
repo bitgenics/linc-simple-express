@@ -1,6 +1,6 @@
 {
   "name": "@bitgenics/linc-simple-express",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A simple express server that hosts a single version of a single site.",
   "main": "src/index.js",
   "repository": "git@github.com:bitgenics/simple-linc-express.git",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
-    "marko": "^3.14.1",
-    "vm2": "^3.1.0"
+    "marko": "^4.0.0-rc.18",
+    "vm2": "^3.2.0"
   }
 }
