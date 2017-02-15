@@ -1,3 +1,4 @@
+require('isomorphic-fetch');
 const path = require('path');
 const {NodeVM} = require('vm2');
 const template = require('./template');
@@ -19,21 +20,28 @@ function createRender(renderer_path, options) {
     opts.assetsManifestName = opts.assetsManifestName || 'asset-manifest.json';
     opts.renderer = path.resolve(opts.rendererPath, opts.rendererFilename);
     opts.assets = path.resolve(opts.rendererPath, opts.assetsManifestName);
+    opts.settingsVariable = opts.settingsVariable || 'settings';
+    opts.settings = opts.settings || {};
 
-    const vm = new NodeVM({
-        sandbox: {},
+    const vmOpts = {
+        sandbox: {
+            fetch: global.fetch,
+        },
         require: {
             external: true,
-            root: opts.rendererPath
-        },
-    });
+            root: opts.rendererPath,
+            context: 'sandbox'
+        }
+    }
+    vmOpts.sandbox[opts.settingsVariable] = opts.settings;
+    const vm = new NodeVM(vmOpts);
 
-    const render = vm.run("module.exports = require('" + opts.renderer + "')");
+    const render = vm.run("global.window = global; module.exports = require('" + opts.renderer + "')");
     const assets = require(opts.assets);
 
     return function(req, res, next) {
         render(req.url, (err, result) => {
-            template(result, assets, (err, results) => {
+            template(result, assets, {variable: opts.settingsVariable, value: opts.settings}, (err, results) => {
                 res.status(results.statusCode).send(results.body);
             });
         });
