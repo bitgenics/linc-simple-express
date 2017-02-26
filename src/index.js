@@ -29,6 +29,7 @@ function createRender(renderer_path, options) {
         },
         require: {
             external: true,
+            builtin: ['path'],
             root: opts.rendererPath,
             context: 'sandbox'
         }
