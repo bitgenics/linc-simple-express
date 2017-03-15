@@ -41,11 +41,7 @@ function createRender(renderer_path, options) {
     const assets = require(opts.assets);
 
     return function(req, res, next) {
-        render.renderGet(req.url, (err, result) => {
-            template(result, assets, {variable: opts.settingsVariable, value: opts.settings}, (err, results) => {
-                res.status(results.statusCode).send(results.body);
-            });
-        });
+        render.renderGet(req, res, { variable: opts.settingsVariable, settings: opts.settings });
     }
 }
 
