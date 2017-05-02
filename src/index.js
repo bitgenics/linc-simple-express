@@ -1,9 +1,9 @@
-require('isomorphic-fetch');
 const path = require('path');
+const fetch = require('node-fetch').default;
 const {NodeVM} = require('vm2');
-const template = require('./template');
 
 function createRender(renderer_path, options) {
+    const createRendererStart = process.hrtime();
     if (!renderer_path) {
         throw new TypeError('renderer_path required')
     }
@@ -17,19 +17,17 @@ function createRender(renderer_path, options) {
 
     opts.rendererPath = path.resolve(renderer_path)
     opts.rendererFilename = opts.rendererFilename || 'server-render.js';
-    opts.assetsManifestName = opts.assetsManifestName || 'asset-manifest.json';
     opts.renderer = path.resolve(opts.rendererPath, opts.rendererFilename);
-    opts.assets = path.resolve(opts.rendererPath, opts.assetsManifestName);
     opts.settingsVariable = opts.settingsVariable || 'settings';
     opts.settings = opts.settings || {};
 
     const vmOpts = {
         sandbox: {
-            fetch: global.fetch,
+            fetch: fetch,
         },
         require: {
             external: true,
-            builtin: ['path'],
+            builtin: ['path', 'crypto'],
             root: opts.rendererPath,
             context: 'sandbox'
         }
@@ -38,10 +36,19 @@ function createRender(renderer_path, options) {
     const vm = new NodeVM(vmOpts);
 
     const render = vm.run("global.window = global; module.exports = require('" + opts.renderer + "')");
-    const assets = require(opts.assets);
+    const createRendererEnd = process.hrtime(createRendererStart);
+    console.log("CreateRenderer: %ds %dms", createRendererEnd[0], createRendererEnd[1]/1000000);
 
     return function(req, res, next) {
+        const start = process.hrtime();
+        req.timings = { start }
+        res.on('finish', () => {
+            const end = process.hrtime(start);
+            console.log("Request timing: %ds %dms", end[0], end[1]/1000000);
+            console.log(req.timings);
+        });
         render.renderGet(req, res, { variable: opts.settingsVariable, settings: opts.settings });
+
     }
 }
 
