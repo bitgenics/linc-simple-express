@@ -1,6 +1,7 @@
 const path = require('path');
 const fetch = require('node-fetch').default;
 const {NodeVM} = require('vm2');
+const Storage = require('./storage');
 
 function createRender(renderer_path, options) {
     const createRendererStart = process.hrtime();
@@ -24,14 +25,19 @@ function createRender(renderer_path, options) {
     const vmOpts = {
         sandbox: {
             fetch: fetch,
+            localStorage: new Storage(),
+            sessionStorage: new Storage()
         },
         require: {
             external: true,
-            builtin: ['path', 'crypto'],
+            builtin: ['http', 'https', 'url', 'assert', 'stream', 'tty', 'util', 'path', 'crypto', 'zlib', 'buffer'],
             root: opts.rendererPath,
+            mock: {
+                'follow-redirects': require('follow-redirects')
+            },
             context: 'sandbox'
         }
-    }
+    };
     vmOpts.sandbox[opts.settingsVariable] = opts.settings;
     const vm = new NodeVM(vmOpts);
 
