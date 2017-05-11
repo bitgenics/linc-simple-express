@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const fetch = require('node-fetch').default;
 const {NodeVM} = require('vm2');
 const Storage = require('./storage');
@@ -29,9 +30,8 @@ function createRender(renderer_path, options) {
             sessionStorage: new Storage()
         },
         require: {
-            external: true,
+            external: false,
             builtin: ['http', 'https', 'url', 'assert', 'stream', 'tty', 'util', 'path', 'crypto', 'zlib', 'buffer'],
-            root: opts.rendererPath,
             mock: {
                 'follow-redirects': require('follow-redirects')
             },
@@ -39,9 +39,11 @@ function createRender(renderer_path, options) {
         }
     };
     vmOpts.sandbox[opts.settingsVariable] = opts.settings;
+    vmOpts.sandbox.window = vmOpts.sandbox;
     const vm = new NodeVM(vmOpts);
 
-    const render = vm.run("global.window = global; module.exports = require('" + opts.renderer + "')");
+    const renderer = fs.readFileSync(opts.renderer);
+    const render = vm.run(`${renderer}`);
     const createRendererEnd = process.hrtime(createRendererStart);
     console.log("CreateRenderer: %ds %dms", createRendererEnd[0], createRendererEnd[1]/1000000);
 
