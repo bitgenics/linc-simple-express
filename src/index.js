@@ -41,10 +41,6 @@ function createRender(renderer_path, settings) {
     Object.keys(settings).forEach((key) => vmOpts.sandbox[key] = settings[key]);
     //Copy sandbox globals into sandbox window.
     Object.keys(vmOpts.sandbox).forEach((key) => vmOpts.sandbox.window[key] = vmOpts.sandbox[key]);
-    vmOpts.sandbox.location = {
-        href: 'http://localhost:3000/',
-        origin: 'http://localhost:3000'
-    }
     const vm = new NodeVM(vmOpts);
 
     const renderer = fs.readFileSync(renderer_path);
