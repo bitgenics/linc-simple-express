@@ -4,7 +4,7 @@ const fetch = require('node-fetch').default;
 const {NodeVM} = require('vm2');
 const Storage = require('./storage');
 
-function createRender(renderer_path, options) {
+function createRender(renderer_path, settings) {
     const createRendererStart = process.hrtime();
     if (!renderer_path) {
         throw new TypeError('renderer_path required')
@@ -14,20 +14,14 @@ function createRender(renderer_path, options) {
         throw new TypeError('renderer_path must be a string')
     }
 
-    // copy options object
-    const opts = Object.create(options || null)
-
-    opts.rendererPath = path.resolve(renderer_path)
-    opts.rendererFilename = opts.rendererFilename || 'server-render.js';
-    opts.renderer = path.resolve(opts.rendererPath, opts.rendererFilename);
-    opts.settingsVariable = opts.settingsVariable || 'settings';
-    opts.settings = opts.settings || {};
+    settings = settings || {};
 
     const vmOpts = {
         sandbox: {
             fetch: fetch,
             localStorage: new Storage(),
-            sessionStorage: new Storage()
+            sessionStorage: new Storage(),
+            window: {}
         },
         require: {
             external: false,
@@ -38,11 +32,17 @@ function createRender(renderer_path, options) {
             context: 'sandbox'
         }
     };
-    vmOpts.sandbox[opts.settingsVariable] = opts.settings;
-    vmOpts.sandbox.window = vmOpts.sandbox;
+    if(settings.LINC_SSR_BROWSER_MOCK) {
+        vmOpts.sandbox.window = MockBrowser.createWindow();
+        vmOpts.sandbox.document = MockBrowser.createDocument();
+    }
+    //Copy settings into sandbox
+    Object.keys(settings).forEach((key) => vmOpts.sandbox[key] = settings[key]);
+    //Copy sandbox globals into sandbox window.
+    Object.keys(vmOpts.sandbox).forEach((key) => vmOpts.sandbox.window[key] = vmOpts.sandbox[key]);
     const vm = new NodeVM(vmOpts);
 
-    const renderer = fs.readFileSync(opts.renderer);
+    const renderer = fs.readFileSync(renderer_path);
     const render = vm.run(`${renderer}`);
     const createRendererEnd = process.hrtime(createRendererStart);
     console.log("CreateRenderer: %ds %dms", createRendererEnd[0], createRendererEnd[1]/1000000);
@@ -55,7 +55,7 @@ function createRender(renderer_path, options) {
             console.log("Request timing: %ds %dms", end[0], end[1]/1000000);
             console.log(req.timings);
         });
-        render.renderGet(req, res, { variable: opts.settingsVariable, settings: opts.settings });
+        render.renderGet(req, res, settings);
 
     }
 }
