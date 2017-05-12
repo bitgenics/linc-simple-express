@@ -49,15 +49,7 @@ function createRender(renderer_path, settings) {
     console.log("CreateRenderer: %ds %dms", createRendererEnd[0], createRendererEnd[1]/1000000);
 
     return function(req, res, next) {
-        const start = process.hrtime();
-        req.timings = { start }
-        res.on('finish', () => {
-            const end = process.hrtime(start);
-            console.log("Request timing: %ds %dms", end[0], end[1]/1000000);
-            console.log(req.timings);
-        });
         render.renderGet(req, res, settings);
-
     }
 }
 
