@@ -1,15 +1,17 @@
 {
   "name": "linc-simple-express",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A simple express server that hosts a single version of a single site.",
   "main": "src/index.js",
   "repository": "git@github.com:bitgenics/simple-linc-express.git",
   "author": "Erwin van der Koogh <erwin@bitgenics.io>",
   "license": "MIT",
   "dependencies": {
+    "faye-websocket": "^0.11.1",
     "follow-redirects": "^1.2.3",
     "mock-browser": "^0.92.14",
     "node-fetch": "^1.6.3",
-    "vm2": "^3.2.0"
+    "vm2": "^3.2.0",
+    "xmlhttprequest": "^1.8.0"
   }
 }

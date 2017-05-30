@@ -5,6 +5,64 @@ const {NodeVM} = require('vm2');
 const MockBrowser = require('mock-browser').mocks.MockBrowser;
 const Storage = require('./storage');
 
+const includedLibs = ['follow-redirects', 'faye-websocket', 'xmlhttprequest'];
+
+function createVM(settings) {
+    settings = settings || {};
+
+    const vmOpts = {
+        sandbox: {
+            fetch: fetch,
+            RENDER_ENV: 'server',
+            localStorage: new Storage(),
+            sessionStorage: new Storage(),
+            addEventListener: () => {},
+            window: {},
+        },
+        require: {
+            external: false,
+            builtin: ['assert', 'buffer', 'crypto', 'events', 'http', 'https', 'path', 'net', 'querystring', 'stream', 'string_decoder', 'tls', 'tty', 'url', 'util', 'zlib' ],
+            mock: {
+                'fs': {
+                    readFile: (file, options, callback) => {
+                        if(typeof options === 'function') {
+                            callback = options;
+                        }
+                        callback('Filesystem operations are not permitted in the Linc sandbox');
+                    },
+                    readFileSync: () => {
+                        throw 'Filesystem operations are not permitted in the Linc sandbox';
+                    },
+                    writeFile: (file, data, options, callback) => {
+                        if(typeof options === 'function') {
+                            callback = options;
+                        }
+                        callback('Filesystem operations are not permitted in the Linc sandbox');
+                    },
+                    writeFileSync: () => {
+                        throw 'Filesystem operations are not permitted in the Linc sandbox';  
+                    }
+                }
+            },
+            context: 'sandbox'
+        }
+    };
+    if(settings.LINC_SSR_BROWSER_MOCK) {
+        vmOpts.sandbox.window = MockBrowser.createWindow();
+        vmOpts.sandbox.document = MockBrowser.createDocument();
+    }
+
+    includedLibs.forEach((lib) => {
+        vmOpts.require.mock[lib] = require(lib);
+    });
+
+    //Copy settings into sandbox
+    Object.keys(settings).forEach((key) => vmOpts.sandbox[key] = settings[key]);
+    //Copy sandbox globals into sandbox window.
+    Object.keys(vmOpts.sandbox).forEach((key) => vmOpts.sandbox.window[key] = vmOpts.sandbox[key]);
+    return new NodeVM(vmOpts);
+}
+
 function createRender(renderer_path, settings) {
     const createRendererStart = process.hrtime();
     if (!renderer_path) {
@@ -15,33 +73,7 @@ function createRender(renderer_path, settings) {
         throw new TypeError('renderer_path must be a string')
     }
 
-    settings = settings || {};
-
-    const vmOpts = {
-        sandbox: {
-            fetch: fetch,
-            localStorage: new Storage(),
-            sessionStorage: new Storage(),
-            window: {}
-        },
-        require: {
-            external: false,
-            builtin: ['http', 'https', 'url', 'assert', 'stream', 'tty', 'util', 'path', 'crypto', 'zlib', 'buffer'],
-            mock: {
-                'follow-redirects': require('follow-redirects')
-            },
-            context: 'sandbox'
-        }
-    };
-    if(settings.LINC_SSR_BROWSER_MOCK) {
-        vmOpts.sandbox.window = MockBrowser.createWindow();
-        vmOpts.sandbox.document = MockBrowser.createDocument();
-    }
-    //Copy settings into sandbox
-    Object.keys(settings).forEach((key) => vmOpts.sandbox[key] = settings[key]);
-    //Copy sandbox globals into sandbox window.
-    Object.keys(vmOpts.sandbox).forEach((key) => vmOpts.sandbox.window[key] = vmOpts.sandbox[key]);
-    const vm = new NodeVM(vmOpts);
+    const vm = createVM(settings);
 
     const renderer = fs.readFileSync(renderer_path);
     const render = vm.run(`${renderer}`);
@@ -54,3 +86,5 @@ function createRender(renderer_path, settings) {
 }
 
 module.exports = createRender;
+module.exports.createVM = createVM;
+module.exports.includedLibs = includedLibs;
