@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch').default;
 const {NodeVM} = require('vm2');
-const MockBrowser = require('mock-browser').mocks.MockBrowser;
 const Storage = require('./storage');
 
 const includedLibs = ['follow-redirects', 'faye-websocket', 'xmlhttprequest'];
@@ -21,7 +20,7 @@ function createVM(settings) {
         },
         require: {
             external: false,
-            builtin: ['assert', 'buffer', 'crypto', 'events', 'http', 'https', 'path', 'net', 'querystring', 'stream', 'string_decoder', 'tls', 'tty', 'url', 'util', 'zlib' ],
+            builtin: ['assert', 'buffer', 'crypto', 'dgram', 'dns', 'events', 'http', 'https', 'path', 'punycode', 'net', 'querystring', 'stream', 'string_decoder', 'tls', 'tty', 'url', 'util', 'zlib' ],
             mock: {
                 'fs': {
                     readFile: (file, options, callback) => {
@@ -47,10 +46,6 @@ function createVM(settings) {
             context: 'sandbox'
         }
     };
-    if(settings.LINC_SSR_BROWSER_MOCK) {
-        vmOpts.sandbox.window = MockBrowser.createWindow();
-        vmOpts.sandbox.document = MockBrowser.createDocument();
-    }
 
     includedLibs.forEach((lib) => {
         vmOpts.require.mock[lib] = require(lib);
