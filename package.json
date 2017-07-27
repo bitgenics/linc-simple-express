@@ -1,6 +1,6 @@
 {
   "name": "linc-simple-express",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "A simple express server that hosts a single version of a single site.",
   "main": "src/index.js",
   "repository": "git@github.com:bitgenics/simple-linc-express.git",

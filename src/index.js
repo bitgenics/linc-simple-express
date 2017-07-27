@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const fetch = require('node-fetch').default;
+const fetch = require('node-fetch');
 const {NodeVM} = require('vm2');
 const Storage = require('./storage');
 
@@ -11,7 +11,11 @@ function createVM(settings) {
 
     const vmOpts = {
         sandbox: {
-            fetch: fetch,
+            fetch: fetch.default,
+            Headers: fetch.Headers,
+            Request: fetch.Request,
+            Response: fetch.Response,
+            FetchError: fetch.FetchError,
             RENDER_ENV: 'server',
             localStorage: new Storage(),
             sessionStorage: new Storage(),
