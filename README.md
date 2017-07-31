@@ -1,2 +1,2 @@
-# simple-linc-express
-A simple express middleware that hosts a single version of a single site.
+# linc-vm
+The VM in which the SSR bundles are run
