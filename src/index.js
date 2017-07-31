@@ -1,12 +1,10 @@
-const path = require('path');
-const fs = require('fs');
 const fetch = require('node-fetch');
-const {NodeVM} = require('vm2');
+const {NodeVM, VMScript} = require('vm2');
 const Storage = require('./storage');
 
 const includedLibs = ['follow-redirects', 'faye-websocket', 'xmlhttprequest'];
 
-function createVM(settings) {
+function createOptions(settings) {
     settings = settings || {};
 
     const vmOpts = {
@@ -59,31 +57,15 @@ function createVM(settings) {
     Object.keys(settings).forEach((key) => vmOpts.sandbox[key] = settings[key]);
     //Copy sandbox globals into sandbox window.
     Object.keys(vmOpts.sandbox).forEach((key) => vmOpts.sandbox.window[key] = vmOpts.sandbox[key]);
-    return new NodeVM(vmOpts);
+    return vmOpts;
 }
 
-function createRender(renderer_path, settings) {
-    const createRendererStart = process.hrtime();
-    if (!renderer_path) {
-        throw new TypeError('renderer_path required')
-    }
-
-    if (typeof renderer_path !== 'string') {
-        throw new TypeError('renderer_path must be a string')
-    }
-
-    const vm = createVM(settings);
-
-    const renderer = fs.readFileSync(renderer_path);
-    const render = vm.run(`${renderer}`);
-    const createRendererEnd = process.hrtime(createRendererStart);
-    console.log("CreateRenderer: %ds %dms", createRendererEnd[0], createRendererEnd[1]/1000000);
-
-    return function(req, res, next) {
-        render.renderGet(req, res, settings);
-    }
+function createReuseableRenderer(renderer, settings) {
+    const script = new VMScript(renderer);
+    const vmOpts = createOptions(settings);
+    const vm = new NodeVM(vmOpts);
+    return vm.run(script);
 }
 
-module.exports = createRender;
-module.exports.createVM = createVM;
+module.exports.createReuseableRenderer = createReuseableRenderer;
 module.exports.includedLibs = includedLibs;

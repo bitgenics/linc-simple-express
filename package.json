@@ -1,9 +1,9 @@
 {
-  "name": "linc-simple-express",
-  "version": "2.1.3",
-  "description": "A simple express server that hosts a single version of a single site.",
+  "name": "linc-vm",
+  "version": "1.0.0",
+  "description": "The VM in which the SSR bundles are run.",
   "main": "src/index.js",
-  "repository": "git@github.com:bitgenics/simple-linc-express.git",
+  "repository": "git@github.com:bitgenics/linc-vm.git",
   "author": "Erwin van der Koogh <erwin@bitgenics.io>",
   "license": "MIT",
   "dependencies": {
