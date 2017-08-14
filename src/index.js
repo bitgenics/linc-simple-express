@@ -65,17 +65,37 @@ const createOptions = (settings) => {
 };
 
 /**
- * Create a reuseable renderer
- * @param renderer
+ * Get script based on renderer source code
+ * @param src
+ */
+const getRendererScript = (src) => new VMScript(src);
+
+/**
+ * Create new renderer in VM using script
+ * @param script
  * @param settings
  * @returns {*}
  */
-const createReuseableRenderer = (renderer, settings) => {
-    const script = new VMScript(renderer);
+const createRenderer = (script, settings) => {
     const vmOpts = createOptions(settings);
     const vm = new NodeVM(vmOpts);
     return vm.run(script);
 };
 
-module.exports.createReuseableRenderer = createReuseableRenderer;
-module.exports.includedLibs = includedLibs;
+/**
+ * Create a reuseable renderer from source
+ * @param src
+ * @param settings
+ * @returns {*}
+ */
+const createReuseableRenderer = (src, settings) => {
+    const script = getRendererScript(src);
+    return createRenderer(script, settings);
+};
+
+module.exports = {
+    createRenderer,
+    createReuseableRenderer,
+    getRendererScript,
+    includedLibs,
+};
