@@ -6,8 +6,6 @@ const Storage = require('./storage');
 const includedLibs = ['follow-redirects', 'faye-websocket', 'xmlhttprequest'];
 
 const createOptions = (settings) => {
-    settings = settings || {};
-
     const vmOpts = {
         sandbox: {
             fetch: fetch.default,
@@ -56,7 +54,7 @@ const createOptions = (settings) => {
     });
 
     // Copy settings into sandbox
-    Object.assign(vmOpts.sandbox, settings);
+    Object.assign(vmOpts.sandbox, settings || {});
     // Copy sandbox globals into sandbox window.
     Object.assign(vmOpts.sandbox.window, vmOpts.sandbox);
     return vmOpts;
