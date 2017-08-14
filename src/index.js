@@ -5,6 +5,10 @@ const Storage = require('./storage');
 
 const includedLibs = ['follow-redirects', 'faye-websocket', 'xmlhttprequest'];
 
+/**
+ * Create options for the VM
+ * @param settings
+ */
 const createOptions = (settings) => {
     const vmOpts = {
         sandbox: {
@@ -60,6 +64,12 @@ const createOptions = (settings) => {
     return vmOpts;
 };
 
+/**
+ * Create a reuseable renderer
+ * @param renderer
+ * @param settings
+ * @returns {*}
+ */
 const createReuseableRenderer = (renderer, settings) => {
     const script = new VMScript(renderer);
     const vmOpts = createOptions(settings);
