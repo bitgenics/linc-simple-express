@@ -21,6 +21,7 @@ const createOptions = (settings) => {
             localStorage: new Storage(),
             sessionStorage: new Storage(),
             addEventListener: () => {},
+            removeEventListener: () => {},
             window: {},
         },
         require: {
