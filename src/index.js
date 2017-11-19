@@ -23,6 +23,9 @@ const createOptions = (settings) => {
             addEventListener: () => {},
             removeEventListener: () => {},
             window: {},
+            performance: {
+                now: () => 0
+            }
         },
         require: {
             external: false,
@@ -48,7 +51,7 @@ const createOptions = (settings) => {
                     writeFileSync: () => {
                         throw 'Filesystem operations are not permitted in the Linc sandbox';
                     },
-                },
+                }
             },
             context: 'sandbox',
         },
