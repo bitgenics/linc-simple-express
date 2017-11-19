@@ -18,8 +18,6 @@ const createOptions = (settings) => {
             Response: fetch.Response,
             FetchError: fetch.FetchError,
             RENDER_ENV: 'server',
-            localStorage: new Storage(),
-            sessionStorage: new Storage(),
             addEventListener: () => {},
             removeEventListener: () => {},
             window: {},
@@ -29,8 +27,7 @@ const createOptions = (settings) => {
         },
         require: {
             external: false,
-            // eslint-disable-next-line max-len
-            builtin: ['assert', 'buffer', 'crypto', 'dgram', 'dns', 'events', 'http', 'https', 'path', 'punycode', 'net', 'querystring', 'stream', 'string_decoder', 'tls', 'tty', 'url', 'util', 'zlib'],
+            builtin: ['buffer', 'stream'],
             mock: {
                 fs: {
                     readFile: (file, options, callback) => {
