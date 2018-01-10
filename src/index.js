@@ -27,7 +27,7 @@ const createOptions = (settings) => {
         },
         require: {
             external: false,
-            builtin: ['assert', 'buffer', 'crypto', 'querystring', 'stream', 'util', 'url'],
+            builtin: ['assert', 'buffer', 'crypto', 'net', 'querystring', 'stream', 'tty', 'util', 'url'],
             mock: {
                 fs: {
                     readFile: (file, options, callback) => {
