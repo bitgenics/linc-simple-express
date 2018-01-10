@@ -3,6 +3,8 @@ const fetch = require('node-fetch');
 const { NodeVM, VMScript } = require('vm2');
 const Storage = require('./storage');
 
+const includedLibs = ['follow-redirects', 'faye-websocket', 'xmlhttprequest'];
+
 /**
  * Create options for the VM
  * @param settings
@@ -52,6 +54,10 @@ const createOptions = (settings) => {
         },
     };
 
+    includedLibs.forEach((lib) => {     
+        vmOpts.require.mock[lib] = require(lib);      
+    });
+
     // Copy settings into sandbox
     Object.assign(vmOpts.sandbox, settings || {});
     // Copy sandbox globals into sandbox window.
@@ -92,4 +98,5 @@ module.exports = {
     createRenderer,
     createReuseableRenderer,
     getRendererScript,
+    includedLibs
 };
